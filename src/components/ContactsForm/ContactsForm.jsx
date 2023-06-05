@@ -1,37 +1,42 @@
-import React, { useState } from 'react';
-import { nanoid } from 'nanoid';
-import propTypes from 'prop-types';
-import css from '../ContactsForm/ContactsForm.module.css';
+import { toast } from 'react-hot-toast';
+import css from './ContactsForm.module.css';
 
-export const ContactsForm = ({ addContact }) => {
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { getContacts } from 'redux/selectors';
+import { addContact } from 'redux/contactsSlice'; 
+
+export  function ContactsForm() {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+  const contacts = useSelector(getContacts);
+  const dispatch = useDispatch();
 
-  const handleSubmit = e => {
-    e.preventDefault();
-  
-    const isContactExists = addContact({ id: nanoid(6), name, number });
-    if (!isContactExists) {
-      reset();
+  const handleSubmit = evt => {
+    evt.preventDefault();
+    if (contacts.some(item => item.name === name)) {
+      toast(`${name} is already in contacts`);
+      return;
     }
+    dispatch(addContact({ name, number }));
+    setName('');
+    setNumber('');
   };
 
-  const handleChange = e => {
-    const { name, value } = e.currentTarget;
+  const handleChange = evt => {
+    const { name, value } = evt.target;
     switch (name) {
       case 'name':
         setName(value);
         break;
+
       case 'number':
         setNumber(value);
         break;
+
       default:
-        break;
+        return;
     }
-  };
-  const reset = () => {
-    setName('');
-    setNumber('');
   };
 
   return (
@@ -69,7 +74,4 @@ export const ContactsForm = ({ addContact }) => {
   );
 };
 
-ContactsForm.propTypes = {
-  name: propTypes.string,
-  number: propTypes.string,
-};
+
